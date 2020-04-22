@@ -47,7 +47,7 @@ function binaryStrToHex(binaryStr){
 function byteToNum(str) {
   let res = 0;
    for(let i=0;i<str.length;i++) {
-     res += str[i]*Math.pow(16, 3-i);
+     res += str[i]*Math.pow(16, str.length-1-i);
    }
    return res;
 }
