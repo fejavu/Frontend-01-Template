@@ -16,11 +16,9 @@ function convertNumToStr(number, x) {
     fraStr += Math.floor((fraction*x));
     fraction = (fraction*x) - Math.floor((fraction*x));
   }
-  
-  string = string + '.'+fraStr;
-  string = string.slice(0, number.toString().length);
 
-  // 指数部分
+  string = string + '.'+fraStr;
+  string = string.slice(0, number.toString().length);  
   
   return string;
 }
