@@ -7,14 +7,12 @@
 
 const net = require('net');
 
-/**
+/**Request Formation
  * method, url = host + post + path
  * body: key-value
  * headers
  */
-
 class Request {
-
   constructor(options) {
     this.method = options.method || "GET";
     this.host = options.host;
@@ -44,42 +42,100 @@ ${this.bodyText}`
   }
 
   send(connection) {
+    return new Promise((resolve, reject) => {
+      if(connection) {
+        connection.write(this.toString())
+      } else {
+        connection = net.createConnection({
+          host: this.host,
+          port: this.port,
+        }, () => {
+          connection.write(this.toString());
+        })
+      }
 
-    return new Promise((resolve, reject) => )
+      connection.on('data', (data) => {
+        resolve(data.toString());
+        connection.end();
+      });
+      
+      connection.on('error', (error) => {
+        reject(error);
+        connection.end();
+        console.log('disconnected from server');
+      });
 
-    if(connection) {
-      connection.write(this.toString())
-    } else {
-      connection = net.createConnection({
-        host: this.host,
-        port: this.port,
-      }, () => {
-        connection.write(this.toString());
-      })
-    }
-
+    });
   }
 }
 
+/**
+ * Response Fromation
+ * status line
+ * headers 
+ * body
+ */
 class Response {
   
 }
 
-let request = new Request({
-  method: "POST",
-  host: "127.0.0.1",
-  port: "8088",
-  headers: {
-    ["x-foo"]: "2"
-  },
-  path: "/",
-  // headers: ,
-  body: {
-    name: "sunshine"
-  }
-});
+class ResponseParser {
+  constructor() {
+    this.WAITING_STATUS_LINE = 0;
+    this.WAITING_STATUS_LINE_END = 1;
+    this.WAITING_HEADER_NAME = 2;
+    this.WAITING_HEADER_VALUE = 3;
+    this.WAITING_HEADER_LINE_END = 4;
+    this.WAITING_HEADER_BLOCK_END = 5;
 
-request.send();
+    this.current = this.WAITING_STATUS_LINE;
+    this.statusLine = "";
+    this.headers = {};
+    this.headerName = "";
+    this.headerValue = "";
+  }
+
+  receive(string) {
+    for(let i=0; i<string.length; i++) {
+      this.receiveChar(string.charAt(i));
+    }
+  }
+
+  receiveChar(char) {
+    if(this.current === this.WAITING_STATUS_LINE) {
+      
+    }
+  }
+}
+
+class TrunkedParser {
+  constructor() {
+
+  }
+
+  receive(string) {
+
+  }
+}
+void async function() {
+  let request = new Request({
+    method: "POST",
+    host: "127.0.0.1",
+    port: "8088",
+    headers: {
+      ["x-foo"]: "2"
+    },
+    path: "/",
+    body: {
+      name: "sunshine"
+    }
+  });
+
+  let response = await request.send();
+  console.log(response);
+}();
+
+
 
 /*
 const net = require('net');
