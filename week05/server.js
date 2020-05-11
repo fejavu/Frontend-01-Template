@@ -4,9 +4,7 @@
 const http = require("http");
 
 const server = http.createServer((req, res) => {
-  console.log("request received");
-  // console.log(req);
-  console.log(req.headers);
+  // console.log("request received");
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('x-foo', 'bar');
   res.writeHead(200, { 'Content-Type': 'text/plain'});
