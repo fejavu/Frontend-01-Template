@@ -240,9 +240,7 @@ void async function() {
   });
 
   let response = await request.send();
-  // console.log("body");
-  // console.log(response)
   let domObj = parser.parserHTML(response.body);
-  // console.log(response.headers);
-  // console.log(response.body);
+  console.log(response.body);
+  console.log(domObj.children);
 }();
