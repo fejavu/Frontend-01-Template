@@ -4,7 +4,7 @@ function getStyle(element)  {
   }
 
   for(let prop in element.computedStyle) {
-    var p = element.computedStyle.value;
+    // var p = element.computedStyle.value;
     element.style[prop]  = element.computedStyle[prop].value;
 
     if(element.style[prop].toString().match(/px$/)) {
@@ -18,18 +18,17 @@ function getStyle(element)  {
 }
  
 function layout(element) {
-  
   if(!element.computedStyle) {
     return;
   } 
 
   var elementStyle = getStyle(element);
 
-  if(element.style.display !== "flex") {
+  if(elementStyle.display !== 'flex') {
     return ;
   }
-
-  var items = element.children.filter(e => e.type === 'element');
+  // items type are 'element'
+  var items = element.children.filter((e) => e.type === 'element');
   
   items.sort(function(a, b) {
     return (a.order || 0) - (b.order || 0);
@@ -43,6 +42,7 @@ function layout(element) {
     }
   });
 
+  // 
   if(!style.flexDirection || style.flexDirection === 'auto'){
     style.flexDirection = 'row';
   }
@@ -90,7 +90,7 @@ function layout(element) {
     crossEnd = 'bottom';
   }
 
-  if(style.flexDirection = 'column') {
+  if(style.flexDirection === 'column') {
     mainSize = 'height';
     mainStart = 'top';
     mainEnd = 'bottom';
@@ -102,7 +102,7 @@ function layout(element) {
     crossEnd = 'right';
   }
 
-  if(style.flexDirection = 'column-reverse') {
+  if(style.flexDirection === 'column-reverse') {
     mainSize = 'height';
     mainStart = 'bottom';
     mainEnd = 'top';
@@ -131,7 +131,7 @@ function layout(element) {
     for(var i=0;i<items.length; i++) {
       var item = items[i];
       itemStyle = getStyle(item);
-      if(itemStyle[mainSize] !== null || itemStyle[mainSize] !== (void 0)) {
+      if((itemStyle[mainSize] !== null) || (itemStyle[mainSize] !== (void 0))) {
         elementStyle[mainSize] = elementStyle[mainSize] + itemStyle[mainSize];
       }
     }
@@ -150,16 +150,15 @@ function layout(element) {
 
     if(itemStyle[mainSize] === null){
       itemStyle[mainSize] = 0;
-  }
-
+    }
 
     // 收集 flex 元素
     if(itemStyle.flex) {
       flexLine.push(item);
     } else if(style.flexWrap === 'nowrap' && isAutoMainSize) {
       mainSpace -= itemStyle[mainSize];
-      if(itemStyle[crossSpace] !== null && itemStyle[crossSpace] !== (void 0)) {
-        crossSpace = Math.max(crossSpace, itemStyle[crossSpace]);
+      if(itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)) {
+        crossSpace = Math.max(crossSpace, itemStyle[crossSize]);
       }
       flexLine.push(item);
     } else {
@@ -170,27 +169,33 @@ function layout(element) {
         // 剩余空间不够存放 item，另起一行。
         flexLine.mainSpace = mainSpace;
         flexLine.crossSpace = crossSpace;
-        flexLine = [item];
+        // diff
+        // flexLine = [item];
+        // flexLines.push(flexLine);
+
+        flexLine = [];
         flexLines.push(flexLine);
+
+        flexLine.push(item);
         mainSpace = style[mainSize];
         crossSpace = 0;
       } else {
         flexLine.push(item);
       }
       if(itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)) {
-        crossSize = Math.max(crossSize, itemStyle[crossSize]);
+        crossSpace= Math.max(crossSpace, itemStyle[crossSize]);
       }
       mainSpace -= itemStyle[mainSpace];
     }
   }
-
   flexLine.mainSpace = mainSpace;
+  
   if(style.flexWrap === 'nowrap' || isAutoMainSize) {
-    flexLine.crossSpace = (style[crossSize] !== undefined) ? style[crossSize] : crossSpace;
+    flexLine.crossSpace = (style[crossSize] !== (void 0)) ? style[crossSize] : crossSpace;
   } else {
     flexLine.crossSpace = crossSpace;
   }
-
+  
   if(mainSpace < 0) {
     // 剩余空间为负数，说明溢出了，只有在单行 flex 容器中产生。需要按比例缩放各个item
     var scale = style[mainSize] / (style[mainSize] - mainSpace);
@@ -219,9 +224,9 @@ function layout(element) {
 
       for(var i = 0; i<items.length; i++) {
         var item = items[i];
-        var itemStyle = getStyle[item];
-
-        if((itemStyle.flex !== null) || itemStyle.flex !== (void 0)) {
+        var itemStyle = getStyle(item);
+        
+        if((itemStyle.flex !== null) && (itemStyle.flex !== (void 0))) {
           flexTotal += itemStyle.flex;
           continue;
         }
@@ -237,6 +242,7 @@ function layout(element) {
           if(itemStyle.flex) {
             itemStyle[mainSize] = (mainSpace / flexTotal) * itemStyle.flex; 
           }
+          itemStyle[mainStart] = currentMain;
           itemStyle[mainEnd] = itemStyle[mainStart] + mainSign * itemStyle[mainSize];
           currentMain = itemStyle[mainEnd];
         }
@@ -264,7 +270,7 @@ function layout(element) {
         }
         for(var i = 0 ;i < items.length; i++) {
           var item = items[i];
-          itemStyle = getStyle(item); // diff
+          itemStyle = getStyle(item); 
           itemStyle[mainStart, currentMain];
           itemStyle[mainEnd] = itemStyle[mainStart] + mainSign * itemStyle[mainSize];
           currentMain = itemStyle[mainEnd] + step;
@@ -291,7 +297,7 @@ function layout(element) {
   }
 
   if(style.flexWrap === 'wrap-reverse') {
-    crossBase = style[crossBase];
+    crossBase = style[crossSize];
   } else {
     crossBase = 0;
   }
@@ -345,7 +351,7 @@ function layout(element) {
       }
       if(align === 'flex-end') {
         itemStyle[crossEnd] = crossBase + crossSign * lineCrossSize;
-        itemStyle[crossStart] = itemStyle[crossEnd] + crossSign * itemStyle[crossSize];
+        itemStyle[crossStart] = itemStyle[crossEnd] - crossSign * itemStyle[crossSize];
       }
       if(align === 'center') {
         itemStyle[crossStart] = crossBase + crossSign * (lineCrossSize - itemStyle[crossSize]) / 2;
@@ -361,7 +367,7 @@ function layout(element) {
     crossBase += crossSign * (lineCrossSize + step);
   });
 
-  console.log(items);
+  // console.log(items);
 }
 
 module.exports = layout;

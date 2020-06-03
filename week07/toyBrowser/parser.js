@@ -1,5 +1,6 @@
 const EOF = Symbol("EOF");  // EOF: End Of File
 const css = require('css');
+const layout = require('./layout.js');
 
 let currentToken = null;
 let currentAttribute = null;
@@ -10,10 +11,23 @@ let currentTextNode = null;
 let rules = [];
 function addCSSRules(text) {
   let ast = css.parse(text);
-  // console.log(ast);
-  // console.log(text);
-  // console.log(JSON.stringify(ast, null, " "));
   rules.push(...ast.stylesheet.rules);
+}
+
+function specificity(selector) {
+  let p = [0, 0, 0, 0];
+  let selectorParts = selector.split(" ");
+  
+  for(var part of selectorParts) {
+    if(part.charAt(0) == "#") {
+      p[1] += 1;
+    } else if(part.charAt(0) == ".") {
+      p[2] += 1;
+    } else {
+      p[3] += 1;
+    }
+  }
+  return p;
 }
 
 function match(element, selector) {
@@ -39,10 +53,24 @@ function match(element, selector) {
   // console.log(element, selector);
 }
 
+function compare(sp_one, sp_two) {
+  if(sp_one[0] - sp_two[0]) {
+    return sp_one[0] - sp_two[0];
+  }
+
+  if(sp_one[1] - sp_two[1]) {
+    return sp_one[1] - sp_two[1];
+  }
+  
+  if(sp_one[2] - sp_two[2]) {
+    return sp_one[2] - sp_two[2];
+  }
+
+  return sp_one[3] - sp_two[3];
+}
+
 function computeCSS(element) {
   let elements = stack.slice().reverse(); // 获取父元素序列，slice切片，无参数为复制。
-  // console.log(rules);
-  // console.log(element);
   if(!element.computedStyle) {
     element.computedStyle = {}
   }
@@ -67,7 +95,24 @@ function computeCSS(element) {
     }
 
     if(matched) {
-      console.log("element: ", element, "match rule: ", rule);
+      let sp = specificity(rule.selectors[0]);
+      let computedStyle = element.computedStyle;
+      for(let declaration of rule.declarations) {
+        if(!computedStyle[declaration.property]) {
+            computedStyle[declaration.property] = {};
+        }
+        if(!computedStyle[declaration.property].specificity) {
+          computedStyle[declaration.property].value = declaration.value;
+          computedStyle[declaration.property].specificity = sp;
+        } else if(compare(computedStyle[declaration.property].specificity, sp) < 0) {
+          // computedStyle[declaration.property].value = declaration.value;
+          for(var k = 0;k<4; k++) {
+            computedStyle[declaration.property][declaration.value][k] += sp[k];
+          }
+        }
+
+      }
+      // console.log(element.computedStyle);
     }
   }
 }
@@ -96,12 +141,13 @@ function emitToken(token) {
     computeCSS(element);
 
     topEle.children.push(element);
-    element.parent = topEle;
+    // element.parent = topEle;
 
     if(!token.isSelfClosing) {
       stack.push(element);
     }
     currentTextNode = null;
+
   } else if (token.type == "endTag") {
     if(topEle.tagName != token.tagName) {
       throw new Error("Tag start end doesn't match");
@@ -111,6 +157,7 @@ function emitToken(token) {
       }
       stack.pop();
     }
+    layout(topEle);
     currentTextNode = null;
   } else if (token.type == "text") {
     if(currentTextNode == null) {
@@ -195,7 +242,7 @@ function tagName(c) {
 function beforeAttributeName(c) {
   if(c.match(/^[\t\n\f ]$/)) {
     return beforeAttributeName;
-  } else if(c == '>' || c == '/' || c == EOF) {
+  } else if(c == '/' || c == '>' || c == EOF) {
     return afterAttributeName(c);
   } else if(c == '=') {
     // return ;

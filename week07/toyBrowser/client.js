@@ -7,6 +7,8 @@
 
 const net = require('net');
 const parser = require('./parser.js');
+const render = require('./render.js');
+const images = require('images');
 
 /**Request Formation
  * method, url = host + post + path
@@ -240,7 +242,13 @@ void async function() {
   });
 
   let response = await request.send();
+
   let domObj = parser.parserHTML(response.body);
-  // console.log(response.body);
-  // console.log(domObj.children);
+  
+  console.log(JSON.stringify(domObj, null, " "));
+  let viewport = images(800, 600);
+  
+  render(viewport, domObj);
+
+  viewport.save('viewport.jpg');
 }();
