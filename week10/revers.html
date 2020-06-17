@@ -1,0 +1,54 @@
+<div id="rangeDemo">
+  <span>1</span>
+  <p>2</p>
+  <p>3</p>
+  <span>4</span>
+</div>
+
+<script>
+  let element = document.getElementById("rangeDemo");
+  
+  // 初级答案，不懂 childNodes 是living collections
+  function reverseChildren(element) {
+    let children = Array.prototype.slice.call(element.childNodes);
+
+    for(let child of children) {
+      element.removeChild(child);
+    }
+
+    children.reverse();
+
+    for(let child of children) {
+      element.appendChild(child);
+    }
+  }
+  // reverseChildren(element);
+
+  // 进阶答案 知道 childNodes 是不断变化的。
+  function reverseChildren_two(element) {
+    let length = element.childNodes.length;
+
+    while(length-- > 0) {
+      console.log(element.childNodes[length]);
+      element.appendChild(element.childNodes[length]);
+    }
+  }
+  // reverseChildren_two(element);
+
+  // 高级答案，Range API 操作，减少重排次数
+  function reverseChildren_rangeAPI(element) {
+    let range = new Range();
+    range.selectNodeContents(element);
+
+    let fragment = range.extractContents();
+    let len = fragment.childNodes.length;
+
+    while(len-- > 0) {
+      fragment.appendChild(fragment.childNodes[len]);
+    }
+    element.appendChild(fragment);
+  }
+
+  reverseChildren_rangeAPI(element);
+
+</script>

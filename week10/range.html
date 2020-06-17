@@ -1,0 +1,12 @@
+<div id="rangeDemo">123
+  <span style="background-color: pink;">456789</span>
+  0123456789
+</div>
+
+<script>
+  let range = new Range();
+  let rangeEle = document.getElementById("rangeDemo");
+  range.setStart(rangeEle.childNodes[0], 2);
+  range.setEnd(rangeEle.childNodes[2], 3);
+  range.extractContents(rangeEle);
+</script>
