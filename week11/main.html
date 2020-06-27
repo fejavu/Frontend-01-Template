@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maze Game</title>
+  <style>
+    .cell {
+      width:6px;
+      height:6px;
+      background-color: lightgrey;
+      border-bottom:solid 1px white;
+      border-right:solid 1px white;
+    }
+    #container{
+      display: flex;
+      flex-wrap: wrap;
+      width:701px;
+      line-height: 6px;
+    } 
+    button {
+      margin: 20px 0;
+    }
+</style>
+</head>
+<body>
+  <div id="container"></div>
+  <button onclick="localStorage.map = JSON.stringify(map)"> Save </button>
+  <script>
+    class Sorted {
+      constructor(data, compare){
+        this.data = data;
+        this.compare = compare;
+      }
+      take(){
+        if(this.data.length === 0) {
+          return;
+        }
+        let min = this.data[0];
+        let minIndex = 0;
+        for(let i = 0; i < this.data.length; i ++) {
+          if(this.compare(this.data[i], min) < 0) {
+            min = this.data[i];
+            minIndex = i;
+          }
+        }
+        // 将数组最后一个替换最小值
+        this.data[minIndex] = this.data[this.data.length - 1]
+        this.data.pop();
+        return min;
+      }
+      insert(v) {
+        this.data.push(v)
+      }
+      get length(){
+        return this.data.length
+      }
+    }
+    
+    class BinaryHeap {
+    constructor(data, compare){
+      this.data = data;
+      this.compare = compare;
+    }
+    take(){
+      if(this.data.length === 0) {
+        return;
+      }
+      let min = this.data[0];
+
+      let i = 0;
+      while (i < this.data.length) {
+        if (i * 2 + 1 >= this.data.length) {
+          break;
+        }
+        if (i * 2 + 2 >= this.data.length) {
+          this.data[i] = this.data[i * 2 + 1]
+          i = i * 2 + 1;
+          break;
+        }
+        if(this.compare(this.data[i * 2 + 1], this.data[i * 2 + 2]) < 0) {
+          this.data[i] = this.data[i * 2 + 1]
+          i = i * 2 + 1;
+        } else {
+          this.data[i] = this.data[i * 2 + 2];
+          i = i * 2 + 2;
+        }
+      }
+      if (i < this.data.length - 1) {
+        this.insertAt(i, this.data.pop())
+      } else {
+        this.data.pop()
+      }
+      return min;
+    }
+    insertAt(i, v) {
+      this.data[i] = v;
+      while(i > 0 && this.compare(v, this.data[Math.floor((i - 1) / 2)]) < 0) {
+        this.data[i] = this.data[Math.floor((i - 1) / 2)];
+        this.data[Math.floor((i - 1) / 2)] = v;
+        i = Math.floor((i - 1) / 2);
+      }
+    }
+    insert(v) {
+      this.insertAt(this.data.length, v)
+    }
+    get length(){
+      return this.data.length
+    }
+  }
+    
+    function sleep(t) {
+      return new Promise((resolve, reject)=> {
+        setTimeout(resolve, t);
+      })
+    }
+    // map initial
+    let map = localStorage.map ? JSON.parse(localStorage.map) : new Array(10000).fill(0);
+    let container = document.querySelector("#container");
+    let len = 100;
+
+    for(let y = 0; y < len; y++) {
+      for(let x = 0; x < len; x++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+
+        if(map[y * len + x] === 1) {
+          cell.style.backgroundColor = 'black';
+        }
+
+        cell.addEventListener("mousemove", () => {
+          if(mouse) {
+            if(clear) {
+              cell.style.backgroundColor = '';
+              map[y * len + x ] = 0;
+            } else {
+              cell.style.backgroundColor = 'black';
+              map[y * len + x ] = 1;
+            }
+          }
+        });
+        container.appendChild(cell);
+      }
+    }
+
+    // draw the maze map
+    let mouse = false;
+    let clear = false;
+    
+    document.addEventListener("mousedown", e => {
+      mouse = true;
+      clear = (e.button == 2);
+    });
+    document.addEventListener("mouseup", () => mouse = false);
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    
+    async function findPath(map, start, end) {
+    // 对起始点、终点进行检查
+    if (map[100 * start[1] + start[0]] === 1 || map[100 * end[1] + end[0]] === 1) {
+      return null;
+    }
+    container.children[100 * start[1] + start[0]].style.backgroundColor = 'blue'
+    container.children[100 * end[1] + end[0]].style.backgroundColor = 'red'
+    map = map.slice();
+
+    function diatance([x, y]) {
+      return (x - end[0]) ** 2 + (y - end[1]) ** 2
+    }
+
+    // let queue = [start];
+    // let collection = new Sorted([start], (a, b) => diatance(a) - diatance(b))
+    let collection = new BinaryHeap([start], (a, b) => diatance(a) - diatance(b))
+    
+    function distance([x, y]) {
+      console.log(x, y)
+      return ((x - end[0]) ** 2 + (y - end[1]) ** 2)
+    }
+  
+    async function insert([x, y], pre) {
+      // 障碍物
+      if(map[100 * y + x] !== 0) {
+        return;
+      }
+      // 边界 
+      if (x < 0 || y < 0 || x >= 100 || y >= 100) {
+        return;
+      }
+      // 已经走过的cell，让它不为0，下次不再走
+      map[100 * y + x] = pre;
+      if (!(x === start[0] && y === start[1]) && !(x === end[0] && y === end[1])) {
+        container.children[100 * y + x].style.backgroundColor = 'lightgreen'
+      }
+      await sleep(5)
+      // queue.push([x, y])
+      collection.insert([x, y])
+    }
+
+
+    // queue.length
+    while(collection.length) {
+      // 深度优先 
+      // let [x, y] = queue.pop()
+
+      // let [x, y] = queue.shift()
+      let [x, y] = collection.take()
+      if (x === start[0] && y === start[1]) {
+        map[100 * y + x] = 'start';
+      }
+      if (x === end[0] && y === end[1]) {
+        let path = []
+        while(x !== start[0] || y !== start[1]) {
+          path.push([x, y])
+          if (!x === end[0] && y === end[1]) {
+            container.children[y * 100 + x].style.backgroundColor = 'pink';
+          }
+          [x, y] = map[y * 100 + x]
+        }
+        return path;
+      }
+      await insert([x - 1, y], [x, y])
+      await insert([x + 1, y], [x, y])
+      await insert([x, y - 1], [x, y])
+      await insert([x, y + 1], [x, y])
+
+      // 斜线 
+      if (map[(y + 1) * 100 + x] !== 1 || map[y * 100 + x + 1] !== 1) {
+        await insert([x + 1, y + 1], [x, y])
+      }
+      if (map[(y + 1) * 100 + x] !== 1 || map[y * 100 + x - 1] !== 1) {
+        await insert([x - 1, y + 1], [x, y])
+      }
+      if (map[(y - 1) * 100 + x] !== 1 || map[y * 100 + x + 1] !== 1) {
+        await insert([x + 1, y - 1], [x, y])
+      }
+      if (map[(y - 1) * 100 + x] !== 1 || map[y * 100 + x - 1] !== 1) {
+        await insert([x - 1, y - 1], [x, y])
+      }
+    }
+    return null;
+  }
+
+  </script>
+</body>
+</html>

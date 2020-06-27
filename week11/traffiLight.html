@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Light</title>
+  <style>
+    .traffic {
+      display: inline-block;
+      width: 200px;
+      height: 200px;
+      margin: 100px 30px;
+      border-radius: 100px;
+      background-color: lightgrey;
+      box-shadow: lightgrey 1px 2px 10px;
+      transition: .5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="traffic red"></div>
+  <div class="traffic yellow"></div>
+  <div class="traffic green"></div>
+
+  <script>
+    let redLight = document.querySelector('.red');
+    let yellowLight = document.querySelector('.yellow');
+    let greenLight = document.querySelector('.green');
+    let lights = document.querySelectorAll('.traffic');
+
+    function sleep(duration) {
+      // sleep the duration
+      return new Promise(function(resolve) {
+        // console.log("This is resolve callback function")
+        setTimeout(resolve, duration);
+      });
+    }
+
+    async function changeColor(element, color, duration) {
+      
+      // clear the preview light;
+      for(let i = 0; i<lights.length; i++) {
+        lights[i].style.backgroundColor = "lightgrey";
+      }
+
+      // light the current light
+      element.style.backgroundColor = color;
+      element.style.borderColor = color;
+      await sleep(duration);
+      console.log(color, duration/1000 + " seconds");
+    }
+
+    async function main() {
+      // Infinite Loop the traffic lights
+      while(true) {
+        await changeColor(redLight,'red', 5000);
+        await changeColor(yellowLight, 'yellow', 2000);
+        await changeColor(greenLight, 'lime', 3000);
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
