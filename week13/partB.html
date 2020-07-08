@@ -1,0 +1,97 @@
+<div id="container">
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字  文字 文字 文字
+</div>
+<div id="dragable" style='width: 100px; height: 100px;background-color: lightblue;display: inline-block'>
+
+</div>
+<script>
+  let dragable = document.querySelector("#dragable");
+
+  let curX = 0, curY = 0;
+
+  document.addEventListener("mousedown", () => {
+    let baseX = event.clientX, baseY = event.clientY;
+    
+    let move = event => insert(event);
+    // let move = event => throttle(insert(event), 50);
+    // let move = (event) => {
+      // console.log(range);
+      // let x = curX + event.clientX - baseX, y = curY + event.clientY - baseY;
+      // dragable.style.transform = `translate(${x}px, ${y}px)`;
+    // };
+
+    let up = (event) => {
+      curX += event.clientX - baseX, curY += event.clientY - baseY;
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+
+  let ranges = [];
+  let container = document.querySelector("#container");
+
+  for(let i = 0; i < container.childNodes[0].textContent.length; i++) {
+    let range = document.createRange();
+    range.setStart(container.childNodes[0], i);
+    range.setEnd(container.childNodes[0], i);
+    ranges.push(range);
+  }
+
+  function nearest(x0, y0) {
+    let nearest = null;
+    let distance = Infinity;
+
+    for(let range of ranges) {
+      let {x, y} = range.getBoundingClientRect();
+      let d = (x0 - x) ** 2 + (y0 - y) ** 2;
+
+      if(d < distance) {
+        distance = d;
+        nearest = range;
+      }
+    }
+    return nearest;
+  }
+
+  function throttle(fn, interval) {
+    let canRun = true;
+
+    return function() {
+      if(!canRun) return;
+
+      canRun = false;
+      setTimeout(() => {
+        fn.apply(this, arguments);
+        canRun = true;
+      }, interval);
+    }
+  }
+  
+  function insert(event) {
+    let range = nearest(event.clientX, event.clientY);
+    range.insertNode(dragable);
+  }
+
+  // 
+  document.addEventListener("selectstart", event => event.preventDefault());
+</script>
