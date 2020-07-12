@@ -1,38 +1,116 @@
-<script>
-  let handlers = [];
-  let object = {
-    a: 1,
-    b: 2
+<style>
+  input {
+    cursor: pointer;
   }
+  div {
+    margin: 30px 0;
+    border: 1px silver solid;
+    border-radius: 20px;
+    width: 300px;
+    height: 300px;
+  }
+</style>
+
+<input  id = 'r' type = range min=0 max=255>
+<input  id = 'g' type = range min=0 max=255>
+<input  id = 'b' type = range min=0 max=255>
+
+<div id="color">
+
+</div>
+
+<script>
+  let handlers = new Map();
+  let reactivities = new Map();
+  let userdReactivities = [];
 
   function reactive(obj) {
-    return new Proxy(obj, {
+    if(reactivities.has(obj)) {
+      return reactivities.get(obj);
+    }
+
+    let proxy = new Proxy(obj, {
       get(obj, prop) {
-        console.log(obj, prop);
+        userdReactivities.push([obj, prop]);
+
+        if(typeof obj[prop] === 'object') {
+          return reactive(obj[prop]);
+        }
         return obj[prop];
       },
+
       set(obj, prop, val) {
         obj[prop] = val;
-        for(let handler of handlers) {
-          handler();
+        
+        if(handlers.get(obj)) {
+          if(handlers.get(obj).get(prop)) {
+            for(let handler of handlers.get(obj).get(prop)) {
+              handler();
+            }
+          }
         }
         return obj[prop];
       }
     });
+
+    reactivities.set(obj, proxy);
+
+    return proxy;
   }
 
   function effect(handler) {
+    userdReactivities = [];
     handler();
-    handlers.push(handler);
-    console.log(handler);
+
+    for(let userdReactivity of userdReactivities) {
+      let [obj, prop] = userdReactivity;
+
+      if(!handlers.has(obj)) {
+        handlers.set(obj, new Map());
+      }
+
+      if(!handlers.get(obj).has(prop)) {
+        handlers.get(obj).set(prop, []);
+      }    
+      handlers.get(obj).get(prop).push(handler);
+    }
   }
 
-  let dummy;
-  let proxy = reactive(object);
+  let p = reactive({
+    r: 200,
+    g: 200,
+    b: 200
+  });
 
-  effect(() =>{dummy = proxy.a});
-  console.log(dummy);
-  proxy.a = 2;
-  console.log(dummy);
+  let inputR = document.getElementById("r");
+  let inputG = document.getElementById("g");
+  let inputB = document.getElementById("b");
+  let colorDIV = document.getElementById('color');
+  
+  effect(() =>{
+    inputR.value = p.r;
+  });  
+  effect(() =>{
+    inputG.value = p.g;
+  });  
+  effect(() =>{
+    inputB.value = p.b;
+  });
+
+  effect( () => {
+    colorDIV.style.backgroundColor = `rgb(${p.r}, ${p.g}, ${p.b})`
+  });
+
+  inputR.addEventListener('input', event => {
+    p.r = event.target.value;
+  });
+
+  inputG.addEventListener('input', event => {
+    p.g = event.target.value;
+  });
+
+  inputB.addEventListener('input', event => {
+    p.b = event.target.value;
+  });
 
 </script>
