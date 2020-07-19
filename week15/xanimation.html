@@ -1,0 +1,31 @@
+<style>
+  #el {
+    width: 100px;
+    height: 100px;
+    background-color: lightskyblue;
+  }
+</style>
+
+<div id="el">
+</div>
+<button id="pause">Pause</button>
+<button id="resume">Resume</button>
+
+<script type = 'module'>
+  import {Timeline, Animation} from './animation.js';
+  import {cubicBezier} from './cubicBezier.js';
+  
+  let el = document.getElementById("el");
+  let pause = document.getElementById("pause");
+  let resume = document.getElementById("resume");
+
+  let linear = t => t;
+
+  let tl = new Timeline;
+  
+  let animation = new Animation(el.style, "trasform", v => `translateX(${v}px)`, 0, 200, 5000, 0, linear);
+  
+  tl.add(animation);
+  tl.start();
+
+</script>
