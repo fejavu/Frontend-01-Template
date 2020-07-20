@@ -2,7 +2,7 @@
   "name": "component",
   "version": "1.0.0",
   "description": "componet demo",
-  "main": "main.js",
+  "main": "mainCarousel.js",
   "scripts": {
     "test": "webpack",
     "build": "webpack-dev-server"
