@@ -1,13 +1,18 @@
-import { createElement, Text, Wrapper } from "./creatElement";
+import { createElement, Text, Wrapper } from "./createElement";
 
 class Carousel {
   constructor(config) {
     this.children = [];
     this.attributes = new Map();
+    this.properties = new Map();
   }
 
   setAttribute(name, value) {
     this[name] = value;
+  }
+
+  appendChild(child) {
+    this.children.push(child);
   }
 
   render() {
@@ -16,9 +21,9 @@ class Carousel {
       element.addEventListener("dragstart", event => {
         event.preventDefault();
         element.style.cursor = 'grabbing';
-        return element;
       });
-    });    
+      return element;
+    });
     let root = <div class="carousel">{children}</div>
 
     let curPosition = 0;
@@ -45,7 +50,7 @@ class Carousel {
       }, 16);
       setTimeout(nextPic, 3000);
     }
-    // setTimeout(nextPic, 3000);
+    setTimeout(nextPic, 3000);
 
     root.addEventListener("mousedown", (event) => {     
       let initX = event.clientX;
@@ -106,7 +111,6 @@ class Carousel {
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", up);
     });
-
     return root;
   }
 
@@ -122,5 +126,4 @@ let carouselData = [
   "https://static001.geekbang.org/resource/image/73/e4/730ea9c393def7975deceb48b3eb6fe4.jpg",
 ];
 let componet = <Carousel data={carouselData}/>
-// componet.render();
 componet.mountTo(document.body);

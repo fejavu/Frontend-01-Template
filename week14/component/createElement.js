@@ -11,9 +11,8 @@ export function createElement(Cls, attributes, ...children) {
     o.setAttribute(name, attributes[name]);
   }
 
-  let visit = () => {
+  let visit = (children) => {
     for(let child of children) {
-
       if(typeof child === "object" && child instanceof Array) {
         visit(child);
         continue;
@@ -68,6 +67,6 @@ export class Wrapper {
   }
 
   get style() {
-    this.root.style;
+    return this.root.style;
   }
 }
