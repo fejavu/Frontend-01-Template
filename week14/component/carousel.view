@@ -1,0 +1,14 @@
+<template>
+  <div></div>
+</template>
+<script>
+  export default {
+    el: "#sfc_demo",
+    data: {
+      message: 'hello'
+    },
+    computed: {
+
+    }
+  }
+</script>

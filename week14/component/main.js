@@ -1,4 +1,3 @@
-
 function createElement(Cls, attributes, ...children) {
   let o;
   if(typeof Cls === "string") {
