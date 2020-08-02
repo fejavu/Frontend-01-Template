@@ -1,171 +1,201 @@
-let element = document.body;
+class Gesture {
+  constructor(element) {
+    this.element = element;
+    this.contexts = Object.create(null);
+    this.MOUSE_SYMBOL = Symbol("mouse");
+  }
 
-function enabelGesture(element) {
+  log() {
+    window.console.log(...arguments);
+  }
 
-  let context = Object.create(null);
-
-  let MOUSE_SYMBOL = Symbol("mouse");
-
-  // mouse events
-  if(document.ontouchstart !== null) {
-    element.addEventListener("mousedown", (event) => {
-      context[MOUSE_SYMBOL] = Object.create(null);
-      start(event, context[MOUSE_SYMBOL]);
-      let mousemove = event => {
-        move(event, context[MOUSE_SYMBOL]);
-        console.log("move", event.clientX, event.clientY);
-      }
-
-      let mouseend = event => {
-        end(event, context[MOUSE_SYMBOL]);
-        document.addEventListener("mousemove", mousemove)
+  // mouse native events
+  mouseEvent() {
+    let document = window.document;
+    if(document.ontouchstart !== null) {
+      this.element.addEventListener("mousedown", (event) => {
+        this.contexts[MOUSE_SYMBOL] = Object.create(null);
+        this.start(event, contexts[MOUSE_SYMBOL]);
+        
+        let mousemove = (event) => {
+          this.move(event, this.contexts[MOUSE_SYMBOL]);
+        }
+    
+        // when end remove all event listener
+        let mouseend = (event) => {
+          this.end(event, this.contexts[MOUSE_SYMBOL]);
+          document.removeEventListener("mousemove", mousemove); 
+          document.removeEventListener("mouseup", mouseend);
+        }
+        document.addEventListener("mousemove", mousemove);
         document.addEventListener("mouseup", mouseend);
-      }
+      });
+    }
+  }
 
-      document.addEventListener("mousemove", mousemove)
-      document.addEventListener("mouseup", mouseend);
+  touchEvent() {
+    // gesture native events
+    this.element.addEventListener("touchstart", event => {
+      for (const touch of event.changedTouches) {
+        this.contexts[touch.identifier] = Object.create(null);
+        this.start(touch, this.contexts[touch.identifier]);
+      }
+    });
+    
+    this.element.addEventListener("touchmove", event => {
+      for (const touch of event.changedTouches) {
+        this.move(touch, this.contexts[touch.identifier])
+      }
+    });
+    
+    this.element.addEventListener("touchend", event => {
+      for (const touch of event.changedTouches) {
+        this.end(touch, this.contexts[touch.identifier]);
+        delete this.contexts[touch.identifier];
+      }
+    });
+    
+    this.element.addEventListener("touchcancel", event => {
+      for (const touch of event.changedTouches) {
+        this.cancel(touch, this.contexts[touch.identifier]);
+        delete this.contexts[touch.identifier];
+      }
     });
   }
-  // gesture events
-  element.addEventListener("touchstart", event => {
-    // console.log(event.type);
-    for (const touch of event.changedTouches) {
-      context[touch.indenifier] = Object.create(null);
-      start(touch, context[touch.indenifier]);
-    }
-  });
 
-  element.addEventListener("touchmove", event => {
-    for (const touch of event.changedTouches) {
-      move(touch, context[touch.indenifier]);
-    }
-  });
-
-  element.addEventListener("touchend", event => {
-    for (const touch of event.changedTouches) {
-      end(touch, context[touch.indenifier]);
-      delete context[touch.indenifier];
-    }
-  });
-
-  element.addEventListener("touchcancel", event => {
-    for (const touch of event.changedTouches) {
-      cancel(touch, context[touch.indenifier]);
-      delete context[touch.indenifier];
-    }
-  });
-
-  // tap 
-  // pan pan-start pan-end
-  // flick
-  // press  press-start press-end
-
-
-
-
-
-  // 抽象函数
-  let start = (point, context) => {
-    element.dispatch(new CustomEvent('start', {
-      startX: point.clientX,
-      startY: point.clientY,
-      clientX: point.clientX,
-      clientY: point.clientY
-    }));
-    context.startX = point.clientX, context.startY = point.clientY;
-    context.isTap = true;
-    context.isPan =false;
-    context.isPress = false;
-    context.moves = [];
-
-    context.timeoutHandler = setTimeout(() => {
-      if(context.isPan) {
-        return;
-      } 
-      context.isTap = false;
-      context.isPan =false;
-      context.isPress = true;
-      console.log("press start")
-      element.dispatch(new CustomEvent('pressstart', {}));
-    }, 500)
-  }
-
-  let move = (point, context) => {
-    let dx = point.clientX - context.startX, dy = point.clientY -context.startY;
-
-    if(dx ** 2 + dy ** 2 > 100 && !context.isPan) {
-      context.isTap = false;
-      context.isPan = true;
-      context.isPress = false;
-
-      element.dispatch(new CustomEvent('panstart', {
+  /**
+   * abstract events
+   * tap
+   * pan - panstart panmove panend
+   * flick
+   * press pressstart pressend 
+   */
+  
+  start(point, context){
+    this.element.dispatchEvent(new CustomEvent('start', {
+      bubbles: true,
+      detail: {
         startX: point.clientX,
         startY: point.clientY,
         clientX: point.clientX,
         clientY: point.clientY
+      }
+    }));
+    context.startX = point.clientX, context.startY = point.clientY;
+    context.isTap = true;
+    context.isPan = false;
+    context.isPress = false;
+    context.moves = [];
+    context.timeHandler = setTimeout(() => {
+      if(context.isPan) {
+        return;
+      }
+      context.isTap = false;
+      context.isPan = false;
+      context.isPress = true;
+      // this.log("press start!!!!!!!");
+      this.element.dispatchEvent(new CustomEvent('pressstart', {
+        bubbles: true
       }));
-      console.log("pan start")
+    }, 500);
+  }
+  
+  move(point, context){
+    let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
+  
+    if(dx ** 2 + dy ** 2 > 100 && !context.isPan) {
+      context.isTap = false;
+      context.isPan = true;
+      context.isPress = false;
+      if(context.isPress) {
+        this.element.dispatchEvent(new CustomEvent('presscancel', {
+          bubbles: true
+        }));
+      }
+      this.element.dispatchEvent(new CustomEvent('panstart', {
+        bubbles: true,
+        detail: {
+          startX: context.startX,
+          startY: context.startY,
+          clientX: point.clientX,
+          clientY: point.clientY
+        }
+      }));
     }
-
-    context.moves = context.moves.filter(record => {
-      Date.now() - record.t < 300;
-    });
-
+  
     if(context.isPan) {
       context.moves.push({
-        dx, dy,
+        dx,
+        dy,
         t: Date.now()
       });
-
-      context.moves = context.moves.filter(record => Date.now() - record.t < 300);
-      console.log("pan");
-
+      context.moves = context.moves.filter(record => Date.now() - record.t < 200);
+      this.element.dispatchEvent(new CustomEvent('pan', {
+        bubbles: true,
+        detail: {
+          startX: context.startX,
+          startY: context.startY,
+          clientX: point.clientX,
+          clientY: point.clientY
+        }
+      }));
     }
-
   }
-
-  let end = (point, context) => {
+  
+  end(point, context) {
     if(context.isPan) {
-      let dx = point.clientX - context.startX, dy = point.clientY -context.startY;
+      let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
       let record = context.moves[0];
       let speed = Math.sqrt((record.dx - dx) ** 2 + (record.dy - dy) ** 2) / (Date.now() - record.t);
-
-      let isflick = speed > 2.5
-      if(isflick) {
-        element.dispatch(new CustomEvent('flick', {
-          startX: point.clientX,
-          startY: point.clientY,
+      let isFlick = speed > 2.5;
+      // this.log(speed);
+      if(isFlick) {
+        this.log("flick");
+        this.element.dispatchEvent(new CustomEvent('flick', {
+          bubbles: true,
+          detail: {
+            startX: context.startX,
+            startY: context.startY,
+            clientX: point.clientX,
+            clientY: point.clientY,
+            speed:speed
+          }
+        }));
+      }
+      this.element.dispatchEvent(new CustomEvent('panend', {
+        bubbles: true,
+        detail: {
+          startX: context.startX,
+          startY: context.startY,
           clientX: point.clientX,
           clientY: point.clientY,
-          speed: speed,
-          isflick: isflick
-        }));
-        // console.log("flick");
-      }
-      element.dispatch(new CustomEvent('panend', {}));
-
-      // console.log("pan end");
-    }
-    if(context.isTap){
-      element.dispatch(new CustomEvent('tap', {}));
-    }
-
-    if(context.isPress) {      
-      element.dispatch(new CustomEvent('panstart', {
-        startX: point.clientX,
-        startY: point.clientY,
-        clientX: point.clientX,
-        clientY: point.clientY,
-        speed: speed
+          speed:speed,
+          idFlick: isFlick
+        }
       }));
-      console.log("press end");
     }
-
-    clearTimeout(context.timeoutHandler);
+    if(context.isTap) {
+      this.element.dispatchEvent(new CustomEvent('tap', {
+        bubbles: true,
+        detail: ""
+      }));
+    } 
+    if(context.isPress) {
+      this.log("press end!!!!!!!");
+      this.element.dispatchEvent(new CustomEvent('pressend', {
+        bubbles: true,
+        detail: ""
+      }));
+    }
+  
+    clearTimeout(context.timeHandler);
   }
-
-  let cancel = (point,context) => {
-      element.dispatch(new CustomEvent('canceled', {}));
-      clearTimeout(context.timeoutHandler);
+  
+  cancel(point, context) {
+    this.element.dispatchEvent(new CustomEvent('cancel', {
+      bubbles: true,
+      detail: ""
+    }));
+    clearTimeout(context.timeHandler);
   }
 }

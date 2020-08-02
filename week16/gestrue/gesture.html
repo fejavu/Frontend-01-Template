@@ -1,9 +1,32 @@
-<body></body>
+<style>
+  #dragdemo {
+    width: 100px;
+    height: 100px;
+    background-color: aqua;
+    transform: translate(0px, 0px);
+  }
+</style>
+
+<body>
+  <div id="dragdemo"></div>
+</body>
 <script src="./main.js"></script>
 <script>
-  document.addEventListener("contextmenu", event => event.preventDefault());
+  window.addEventListener("contextmenu", event => event.preventDefault());
   document.addEventListener("selectstart", event => event.preventDefault());
-  document.addEventListener("touchmove", event => event.preventDefault(), {passive: false});
+  document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+  
+  
+  let x = 0, y = 0;
+  let dragEle = document.getElementById("dragdemo");
+  enablegesture(dragEle);
 
-  document.addEventListener('tap',event => console.log('tap event'));
+  dragEle.addEventListener("pan", (event) => {
+    dragEle.style.transform = `translate(${x + event.detail.clientX - event.detail.startX}px, ${y + event.detail.clientY - event.detail.startY}px)`;
+  });
+
+  dragEle.addEventListener("panend", (event) => {
+    x = x + event.detail.clientX - event.detail.startX;
+    y = y + event.detail.clientY - event.detail.startY;
+  });
 </script>
