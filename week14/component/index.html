@@ -8,7 +8,6 @@
     /* outline 不改变排布 */
     outline: solid skyblue 5px;
     overflow: hidden;
-    cursor: grab;
     zoom: 1;
     box-shadow: 2px 2px 10px 3px lightskyblue;
   }
@@ -16,7 +15,10 @@
     width: 500px;
     height: 300px;
     display: inline-block;
-    transition: ease 1s;
+    /* transition: ease 1s; */
+  }
+  .carousel > img:hover {
+    cursor: grab;
   }
 </style>
 <body></body>

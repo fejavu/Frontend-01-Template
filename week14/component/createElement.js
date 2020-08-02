@@ -1,3 +1,5 @@
+import { enablegesture } from "./gesture";
+
 export function createElement(Cls, attributes, ...children) {
   let o;
   if(typeof Cls === "string") {
@@ -48,6 +50,15 @@ export class Wrapper {
   // attributes
   setAttribute(name, val) {
     this.root.setAttribute(name, val);
+
+    if(name.match(/^on([\s\S]+)$/)) {
+      let eventName = RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase());
+      this.root.addEventListener(eventName, val);
+    }
+
+    if(name == "enablegesture") {
+      enablegesture(this.root);
+    }
   }
 
   appendChild(child) {
