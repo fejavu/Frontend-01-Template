@@ -1,0 +1,14 @@
+{
+  "name": "consoledemo",
+  "version": "1.0.0",
+  "description": "console demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "start"
+  },
+  "author": "fejavu",
+  "license": "MIT",
+  "dependencies": {
+    "ttys": "0.0.3"
+  }
+}

@@ -1,0 +1,16 @@
+
+h1 span {
+  background-color: lightskyblue;
+  transition: ease .3s ;
+  border-radius: 3px;
+}
+
+h1 span:hover {
+  background-color: lightsteelblue;
+  opacity: 0.5;
+}
+
+span.selected {
+  background-color: lightsteelblue;
+  opacity: 1;
+}

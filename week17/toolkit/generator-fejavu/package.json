@@ -1,0 +1,19 @@
+{
+  "name": "generator-fejavu",
+  "version": "1.0.0",
+  "description": "yeoman demos",
+  "main": "index.js",
+  "scripts": {
+    "test": "start"
+  },
+  "keywords": ["yeoman-generator"],
+  "files": [
+    "app",
+    "router"
+  ],
+  "author": "fejavu",
+  "license": "ISC",
+  "dependencies": {
+    "yeoman-generator": "^4.11.0"
+  }
+}
