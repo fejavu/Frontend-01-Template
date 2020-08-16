@@ -1,5 +1,7 @@
 import { createElement, Text, Wrapper } from "./createElement";
-export class Carousel {
+
+
+export class ListView {
   constructor(config) {
     this.children = [];
     this.attributes = new Map();
@@ -11,22 +13,26 @@ export class Carousel {
     this[name] = value;
   }
 
+  getAttribute(name) {
+    return this[name];
+  }
+  
   appendChild(child) {
     this.children.push(child);
   }
 
   render() {
-    let data = this.getAttribute('data');
-    return <div class='list-view'>
-      
+    let data = this.getAttribute("data");
+    let root = <div class="listview" style="width: 300px">
+      {
+        data.map(this.children[0])
+      }
     </div>
+
+    return root;
   }
 
   mountTo(parent) {
     this.render().mountTo(parent);
-  }
-
-  getAttribute(attr) {
-    return this[name];
   }
 }

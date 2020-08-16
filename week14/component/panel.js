@@ -1,5 +1,6 @@
 import { createElement, Text, Wrapper } from "./createElement";
-export class Carousel {
+
+export class Panel {
   constructor(config) {
     this.children = [];
     this.attributes = new Map();
@@ -16,7 +17,14 @@ export class Carousel {
   }
 
   render() {
-    return <div></div>
+    let root = <div class="panel">
+      <h1 style="background-color: lightskyblue; color: white; margin: 10px 0;width: 300px">{this.title}</h1>
+      <div style="border: 1px solid skyblue; min-height: 300px; width: 300px">
+        {this.children}
+      </div>
+    </div>
+
+    return root;
   }
 
   mountTo(parent) {
