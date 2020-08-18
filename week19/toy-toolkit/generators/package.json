@@ -1,0 +1,17 @@
+{
+  "name": "generator-toy_tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "yeoman"
+  ],
+  "author": "fejavu",
+  "license": "MIT",
+  "dependencies": {
+    "yeoman-generator": "^4.11.0"
+  }
+}
