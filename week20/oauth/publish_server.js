@@ -24,8 +24,8 @@ const server = http.createServer((req, res) => {
 function auth(request,res) {
   let code = request.url.match(/code=([^&]+)/)[1];
   let state = "abc123";
-  let client_id = "Iv1.6e8c06ad13f8e69b";
-  let client_secret = "2bb380c85d263520f28969770529f2c58c30ecc5";
+  let client_id = ''      // get from oauth.json;
+  let client_secret = '' ;
   let redirect_uri = "http://localhost:8000/auth";
   let post_url = "https://github.com/login/oauth/access_token"; 
   let publish_url = "http://localhost:8080/publish";

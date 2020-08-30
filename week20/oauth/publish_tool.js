@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 var packname = "./package"
 var filename = "./eibg.jpg";
 let state = "abc123";
-let client_id = "Iv1.6e8c06ad13f8e69b";
+let client_id = ""; // get from oauth.json
 let redirect_uri = "http://localhost:8000/auth";
 let authorize_url = "https://github.com/login/oauth/authorize";
 
